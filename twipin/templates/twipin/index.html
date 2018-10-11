@@ -26,7 +26,7 @@
                </div>
 
                <div id="twipTemplate" class="d-none">
-                  <div class="row mb-2 twip"  >
+                  <div class="row mb-2 twip" twipId="-1" >
                      <div class="col">
                         <div class="card">
                            <div class="card-body">
@@ -76,8 +76,23 @@
             $("#btnEnviar").on('click', function() {
                  var t = $("#mensagem").val();
                  $("#mensagem").val("").trigger("input").focus();
-                 addTwip(0, t, "FakeUser");
-                 atualizarContadorTwips();
+
+                 $.ajax({
+                     method: "POST",
+                     url: "/api/twips",
+                     data: {texto: t}
+                 })
+                 .done(function(data) {
+                    if (data["mensagem"] == "ok") {
+                       id = data["id"]
+                       usuario = data["usuario"]
+                       addTwip(id, t, usuario);
+                       atualizarContadorTwips(); 
+                    } else {
+                       alert("Erro: "+data["mensagem"]);
+                    }
+                 });
+
                  return false;
             });
 
@@ -93,15 +108,23 @@
             });
 
             $("#twipTemplate a.excluir").on('click', function() {
-                 //TODO Fazer chamada ajax aqui para remover
-                 $(this).closest("div.twip").remove();
-                 atualizarTwips();
+                 id = $(this).closest("div.twip").attr("twipId");
+                 twip = $(this)
+
+                 $.ajax({
+                     method: "DELETE",
+                     url: "/api/twips/" + id
+                 })
+                 .done(function(data) {
+                     $(twip).closest("div.twip").remove();
+                     atualizarContadorTwips();
+                 });
                  return false;
 
             });
 
-            //TODO Fazer uma chamada para carregar todos os twips aqui
-            $.getJSON( "/json/listartwips", function( twips ) {
+            //Fazer uma chamada para carregar todos os twips aqui
+            $.getJSON( "/api/twips", function( twips ) {
                   
                  var count = twips.lista.length
                  for (var c = 0; c < count; c++) {
@@ -120,6 +143,7 @@
        //Adiciona um twip com os dados dos parâmetros
        function addTwip(id, texto, usuario) {
            var newTwip = $("#twipTemplate > div").clone(true).hide().prependTo("#feed");
+           newTwip.attr("twipId", id); 
            newTwip.find("span.username").text("@" + usuario);
            newTwip.find("p.texto").text(texto);
            newTwip.fadeIn("slow");
