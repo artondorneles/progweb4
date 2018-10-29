@@ -30,9 +30,9 @@
                      <div class="col">
                         <div class="card">
                            <div class="card-body">
-                              <h6 class="card-title"> John Doe <span class="username font-weight-light text-muted">@johndoereal</span></h6>
+                              <h6 class="card-title"><span class="nome"> John Doe </span> <span class="username font-weight-light text-muted">@johndoereal</span></h6>
                               <p class="texto">O mundo é grande e cabe nesta janela sobre o mar. O mar é grande e cabe na cama e no colchão de amar. O amor é grande e cabe no breve espaço de beijar.</p> 
-                              <a class="curtir mr-2" href="#"><i class="fas fa-heart"></i> <span>0</span></a>
+                              <a class="curtir mr-2" href="#"><i class="far fa-heart"></i> <span>0</span></a>
                               <a class="excluir mr-2 float-right" href="#"><i class="far fa-trash-alt"> </i></a>
                            </div>
                         </div>
@@ -98,8 +98,12 @@
                  })
                  .done(function(data) {
                     if (data["mensagem"] == "ok") {
-                       $(link).find("span").text(data["curtidas"]);
-                       $(link).find("i").addClass("gostei");
+                       $(link).fadeOut("fast", function() {
+                          $(link).find("span").text(data["curtidas"]);
+                          $(link).addClass("curtiu");
+                          $(link).find("svg").removeClass("far").addClass("fas");
+                          $(link).fadeIn();
+                       });
                     } else {
                        alert("Erro: "+data["mensagem"]);
                     }
@@ -151,12 +155,15 @@
            newTwip.find("span.username").text("@" + usuario);
            newTwip.find("p.texto").text(texto);
            newTwip.find("a.curtir > span").text(curtidas);
+           newTwip.find("a.curtir > svg").removeClass("fas far");
            if (curtiu==true) {
                newTwip.find("a.curtir").addClass("curtiu");
+               newTwip.find("a.curtir > svg").addClass("fas");
            } else {
                newTwip.find("a.curtir").removeClass("curtiu");
+               newTwip.find("a.curtir > svg").addClass("far");
            }
-           newTwip.fadeIn("slow");
+           newTwip.fadeIn();
        }
 
 
