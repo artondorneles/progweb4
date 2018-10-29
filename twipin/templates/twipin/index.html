@@ -22,6 +22,9 @@
                   </div>
                </div>
 
+               <div id="mapa" class="mb-2" style="height: 200px">
+               </div>
+
                <div id="feed">
                </div>
 
@@ -46,6 +49,8 @@
     <script>
 
        $(document).ready(function() {
+       
+            configurarMapa();
             
             atualizarContadorTwips();
 
@@ -196,8 +201,37 @@
            $("#twipCounter").text(texto); 
        }
 
+       //Função para inicializar o mapa
+       function configurarMapa() {
+            //Localização de Frederico
+            var fw = {lat: -27.3667, lng: -53.4};
+
+            //Cria o mapa centralizado em fw
+            var mapa = new google.maps.Map(document.getElementById('mapa'), {zoom: 15, center: fw});
+
+            //Cria um marcador na posição indicada por fw
+            var marcador = new google.maps.Marker({
+                position: fw,                 //Posição do marcador 
+                map: mapa,                    //Variável do mapa
+                title: "Frederico Westphalen" //Texto do marcador
+            });
+
+            //Adiciona uma função associada ao clique no marcador 
+            marcador.addListener('click', function() {
+                alert("Você clicou em Frederico Westphalen!");
+            });
+
+            //Associa uma função ao evento clique do mapa 
+            google.maps.event.addListener(mapa, 'click', function(event) {
+               var ponto = event.latLng;
+               alert("Latitude: " + ponto.lat() + ", Longitude: " + ponto.lng());
+            });
+
+       }
+
    </script>
 
+   <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs"> </script>
  
 {% endblock %}
 
