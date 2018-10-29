@@ -89,25 +89,31 @@
             //Eventos do twipTemplate
             $("#twipTemplate a.curtir").on('click', function() {
 
-                 id = $(this).closest("div.twip").attr("twipId");
-                 link = $(this)
+                 link = $(this);
+                 id = $(link).closest("div.twip").attr("twipId");
+                 curtiu = $(link).hasClass("curtiu"); 
+                 
+
+                 operacao = "POST"
+                 if (curtiu) {
+                    operacao = "DELETE";
+                 }
 
                  $.ajax({
-                     method: "POST",
+                     method: operacao,
                      url: "/api/twips/" + id  +  "/coracao"
                  })
                  .done(function(data) {
                     if (data["mensagem"] == "ok") {
                        $(link).fadeOut("fast", function() {
                           $(link).find("span").text(data["curtidas"]);
-                          $(link).addClass("curtiu");
-                          $(link).find("svg").removeClass("far").addClass("fas");
+                          $(link).toggleClass("curtiu");
+                          $(link).find("svg").toggleClass("far").toggleClass("fas");
                           $(link).fadeIn();
                        });
                     } else {
                        alert("Erro: "+data["mensagem"]);
                     }
-
                  });
                  return false;
 
@@ -122,8 +128,10 @@
                      url: "/api/twips/" + id
                  })
                  .done(function(data) {
-                     $(twip).closest("div.twip").remove();
-                     atualizarContadorTwips();
+                     $(twip).closest("div.twip").slideUp("normal", function() {
+                        $(twip).closest("div.twip").remove();
+                        atualizarContadorTwips();
+                     });
                  });
                  return false;
 
