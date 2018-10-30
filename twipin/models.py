@@ -5,6 +5,8 @@ class Twip(models.Model):
     autor = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     texto = models.CharField(max_length=140)
     data_criacao = models.DateTimeField(default=timezone.now)
+    latitude = models.FloatField(default=0)
+    longitude = models.FloatField(default=0)
     #adicionar outros campos relevantes aqui
 
     def __str__(self):

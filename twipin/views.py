@@ -76,18 +76,20 @@ def api_twips(request):
 
       for t in twips:
          curtiu = t.curtida_set.filter(autor_id = u.id).count() > 0
-         temp = {"id": t.id, "texto": t.texto, "nome":t.autor.first_name, "autor": t.autor.username, "curtidas": t.curtida_set.count(), "curtiu": curtiu}
+         temp = {"id": t.id, "texto": t.texto, "nome":t.autor.first_name, "autor": t.autor.username, "curtidas": t.curtida_set.count(), "curtiu": curtiu, "longitude": t.longitude, "latitude": t.latitude}
          jt["lista"].append(temp)   
        
       return JsonResponse(jt)
    elif request.method == "POST":
 
       #Salva no banco
-      t = request.POST["texto"]
+      texto = request.POST["texto"]
+      lat = request.POST["latitude"]
+      lon = request.POST["longitude"]
       u = request.user 
-      twip = Twip(autor=u, texto = t)
-      twip.save()
+      t = Twip(autor=u, texto = texto, latitude = lat, longitude = lon)
+      t.save()
       
-      jt = {"mensagem": "ok", "id": twip.id, "usuario": u.username, "nome": u.first_name}
+      jt = {"mensagem": "ok", "id": t.id, "usuario": u.username, "nome": u.first_name, "longitude": t.longitude, "latitude": t.latitude}
       return JsonResponse(jt)
  

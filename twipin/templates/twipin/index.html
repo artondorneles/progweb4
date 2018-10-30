@@ -48,6 +48,10 @@
 
     <script>
 
+       var posicaoAtual = {lat: -27.3667, lng: -53.4};
+       var mapa;
+       var marcadores = {};
+
        $(document).ready(function() {
        
             configurarMapa();
@@ -75,14 +79,16 @@
                  $.ajax({
                      method: "POST",
                      url: "/api/twips",
-                     data: {texto: t}
+                     data: {texto: t, latitude: posicaoAtual.lat, longitude: posicaoAtual.lng}
                  })
                  .done(function(data) {
                     if (data["mensagem"] == "ok") {
-                       id = data["id"];
-                       usuario = data["usuario"];
-                       nome = data["nome"];
-                       addTwip(id, t, nome , usuario,0,false);
+                       var id = data["id"];
+                       var usuario = data["usuario"];
+                       var nome = data["nome"];
+                       var latitude = data["latitude"];
+                       var longitude = data["longitude"];
+                       addTwip(id, t, nome , usuario,0,false,latitude,longitude);
                        atualizarContadorTwips(); 
                     } else {
                        alert("Erro: "+data["mensagem"]);
@@ -95,12 +101,11 @@
             //Eventos do twipTemplate
             $("#twipTemplate a.curtir").on('click', function() {
 
-                 link = $(this);
-                 id = $(link).closest("div.twip").attr("twipId");
-                 curtiu = $(link).hasClass("curtiu"); 
-                 
+                 var link = $(this);
+                 var id = $(link).closest("div.twip").attr("twipId");
+                 var curtiu = $(link).hasClass("curtiu"); 
 
-                 operacao = "POST"
+                 var operacao = "POST"
                  if (curtiu) {
                     operacao = "DELETE";
                  }
@@ -136,6 +141,7 @@
                  .done(function(data) {
                      $(twip).closest("div.twip").slideUp("normal", function() {
                         $(twip).closest("div.twip").remove();
+                        marcadores[id].setMap(null); //Apaga marcador
                         atualizarContadorTwips();
                      });
                  });
@@ -154,7 +160,9 @@
                      var nome = twips.lista[c].nome
                      var curtidas = twips.lista[c].curtidas
                      var curtiu = twips.lista[c].curtiu
-                     addTwip(id,texto,nome,usuario,curtidas,curtiu)
+                     var latitude = twips.lista[c].latitude;
+                     var longitude = twips.lista[c].longitude;
+                     addTwip(id,texto,nome,usuario,curtidas,curtiu,latitude,longitude)
                  }
                  atualizarContadorTwips();
 
@@ -164,7 +172,7 @@
        });
 
        //Adiciona um twip com os dados dos parâmetros
-       function addTwip(id, texto, nome, usuario, curtidas,curtiu) {
+       function addTwip(id, texto, nome, usuario, curtidas,curtiu,latitude, longitude) {
            var newTwip = $("#twipTemplate > div").clone(true).hide().prependTo("#feed");
            newTwip.attr("twipId", id); 
            newTwip.find("span.username").text("@" + usuario);
@@ -184,6 +192,22 @@
            } else {
                newTwip.find("a.excluir").addClass("d-none");
            }
+           //Cria o marcador 
+           var m = new google.maps.Marker({
+               position: {lat: parseFloat(latitude), lng: parseFloat(longitude)},  //Posição do marcador 
+               animation: google.maps.Animation.DROP,      //Animação
+               map: mapa,                                  //Variável do mapa
+               title: usuario                              //Texto do marcador
+           });
+           //Adiciona uma função associada ao clique no marcador 
+           m.addListener('click', function() {
+               var pos = newTwip.offset().top;
+               $(window).scrollTop(pos);
+               newTwip.effect("shake");
+           });
+           //Adiciona no dicionário pra podermos resgatar depois
+           marcadores[id] = m;
+
            newTwip.fadeIn();
        }
 
@@ -203,30 +227,14 @@
 
        //Função para inicializar o mapa
        function configurarMapa() {
-            //Localização de Frederico
-            var fw = {lat: -27.3667, lng: -53.4};
-
-            //Cria o mapa centralizado em fw
-            var mapa = new google.maps.Map(document.getElementById('mapa'), {zoom: 15, center: fw});
-
-            //Cria um marcador na posição indicada por fw
-            var marcador = new google.maps.Marker({
-                position: fw,                 //Posição do marcador 
-                map: mapa,                    //Variável do mapa
-                title: "Frederico Westphalen" //Texto do marcador
-            });
-
-            //Adiciona uma função associada ao clique no marcador 
-            marcador.addListener('click', function() {
-                alert("Você clicou em Frederico Westphalen!");
-            });
+            //Cria o mapa centralizado na posicaoAtual 
+            mapa = new google.maps.Map(document.getElementById('mapa'), {zoom: 15, center: posicaoAtual});
 
             //Associa uma função ao evento clique do mapa 
             google.maps.event.addListener(mapa, 'click', function(event) {
-               var ponto = event.latLng;
-               alert("Latitude: " + ponto.lat() + ", Longitude: " + ponto.lng());
+               posicaoAtual.lat = event.latLng.lat();
+               posicaoAtual.lng = event.latLng.lng();
             });
-
        }
 
    </script>
